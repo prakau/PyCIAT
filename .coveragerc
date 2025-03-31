@@ -1,0 +1,61 @@
+[run]
+source = src
+omit =
+    */tests/*
+    */docs/*
+    */notebooks/*
+    setup.py
+    conftest.py
+    */site-packages/*
+    */distutils/*
+    tests/*
+
+[report]
+exclude_lines =
+    # Skip any line with a pragma
+    pragma: no cover
+
+    # Don't complain about missing debug-only code
+    def __repr__
+    if self\.debug
+
+    # Don't complain about abstract methods
+    @(abc\.)?abstractmethod
+
+    # Don't complain if tests don't hit defensive assertion code
+    raise NotImplementedError
+    pass
+    raise ImportError
+
+    # Don't complain if non-runnable code isn't run
+    if __name__ == .__main__.:
+
+    # Don't complain about type checking imports
+    if typing.TYPE_CHECKING:
+
+    # Don't complain about type checking imports
+    if TYPE_CHECKING:
+
+    # Don't complain about type params for Protocol classes
+    @(typing\.)?runtime_checkable
+
+ignore_errors = True
+precision = 2
+show_missing = True
+skip_covered = False
+
+[html]
+directory = htmlcov
+title = Crop Model Framework Coverage Report
+
+[xml]
+output = coverage.xml
+
+[paths]
+source =
+    src/
+    */site-packages/
+
+[json]
+output = coverage.json
+pretty_print = true

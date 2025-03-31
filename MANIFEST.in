@@ -1,0 +1,70 @@
+# Documentation
+include docs/README.md
+include docs/requirements-docs.txt
+recursive-include docs/_static *
+recursive-include docs/_templates *
+recursive-include docs/figures *.png *.jpg *.svg
+
+# Configuration files
+include config/config_template.yaml
+include pyproject.toml
+include requirements.txt
+include notebooks/notebook_requirements.txt
+
+# Model templates
+recursive-include data/templates *.mzx *.apsimx *.tec *.sol
+recursive-include data/templates README.md
+
+# Notebooks
+recursive-include notebooks *.ipynb
+include notebooks/README.md
+
+# License and docs
+include LICENSE
+include README.md
+include CHANGELOG.md
+include CONTRIBUTING.md
+include CODE_OF_CONDUCT.md
+
+# GitHub-specific files
+include .github/workflows/*.yml
+include .pre-commit-config.yaml
+
+# Development configuration
+include Makefile
+include .coveragerc
+
+# Scripts
+recursive-include scripts *.py
+recursive-include scripts *.sh
+
+# Exclude patterns
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude *.so
+global-exclude .DS_Store
+global-exclude .env
+global-exclude .venv
+global-exclude *.swp
+global-exclude *.swo
+
+# Exclude development and build directories
+prune build
+prune dist
+prune docs/_build
+prune htmlcov
+prune .pytest_cache
+prune .coverage
+prune .mypy_cache
+prune .tox
+prune .git
+prune *.egg-info
+
+# Exclude data directories that should be created locally
+prune data/climate
+prune data/gis
+prune data/soil
+prune simulations
+prune models
+prune logs
+prune analysis

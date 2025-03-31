@@ -1,0 +1,288 @@
+##############################################################################
+### File: config/config.yaml
+##############################################################################
+# --- Project Configuration ---
+project_name: "Karnataka Maize Gold Standard v3 - Enhanced Pipeline"
+base_dir: "/path/to/your/project/karnataka_maize_gold_standard_v3" # ** EDIT THIS ** Absolute path to the project root
+
+# --- Logging ---
+logging:
+  log_file: "logs/pipeline_run.log" # Relative to base_dir if base_dir is set, otherwise relative to execution dir
+  level: "INFO" # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  format: "%(asctime)s - %(levelname)s - [%(name)s:%(lineno)d] - %(message)s" # Detailed format
+
+# --- Parallel Processing (for script 03) ---
+parallel:
+  # Number of local parallel workers (-1 uses all CPU cores, 1 runs sequentially)
+  num_workers: -1
+  # Option for HPC task distribution (if running script 03 via scheduler array jobs)
+  use_hpc_env_vars: False # Set to True if running via SLURM/PBS array job
+  hpc_task_id_var: "SLURM_ARRAY_TASK_ID" # Environment variable for task ID (e.g., SLURM)
+  hpc_num_tasks_var: "SLURM_ARRAY_TASK_COUNT" # Environment variable for total tasks (e.g., SLURM)
+
+# --- Data Paths (Relative paths are resolved against base_dir) ---
+paths:
+  # Climate Sources Definitions
+  climate_sources:
+    gcm_nex_cmip6: # User-defined name for this source
+      type: "GCM" # GCM or RCM
+      path: "data/climate/gcm_nex_cmip6/" # Base path containing Model/Scenario subdirs
+      metadata:
+        resolution: "0.25deg"
+        notes: "NEX-GDDP-CMIP6 downscaled data"
+    cordex_sa_iitm:
+      type: "RCM"
+      path: "data/climate/cordex_sa_iitm_rcm/" # Base path containing Model/Scenario subdirs
+      metadata:
+        resolution: "50km"
+        driving_experiment: "historical, rcp45, rcp85" # Scenarios available for this source
+        notes: "IITM RegCM4 CORDEX-SA runs (example)"
+
+  # Soil and GIS Data
+  soil_shapefile: "data/soil/karnataka_soils.shp"              # Shapefile for spatial soil ID lookup
+  soil_shapefile_id_column: "SOIL_ID"                         # Column name in shapefile containing the Soil ID
+  soil_profiles: "data/soil/soil_profile_data.csv"           # Soil layer data (CSV or DB connection string?)
+  locations_file: "data/gis/simulation_locations.csv"        # CSV with lat, lon, loc_id (required), soil_id, elev (optional)
+  gis_karnataka_boundary: "data/gis/karnataka_boundary.shp"  # Optional: For map plotting
+  gis_districts: "data/gis/karnataka_districts.shp"        # Optional: For aggregating results to districts
+  district_id_column: "DIST_ID"                              # Column name in district shapefile containing the District ID
+
+  # Experimental Data (for calibration/validation - not directly used in core pipeline scripts)
+  experimental_data: "data/experimental/maize_trials.csv"
+
+  # Simulation & Output Paths (These will be created if they don't exist)
+  simulation_setup_dir: "simulations/setup/"       # Input files organized here
+  simulation_output_dir: "simulations/output/"     # Raw crop model outputs go here (Note: this path is not directly used by scripts, working_dir inside setup is used)
+  simulation_status_file: "simulations/simulation_status.csv" # Tracks run progress/status
+  analysis_output_dir: "analysis_outputs/"         # Processed/combined results
+  figure_output_dir: "figures/"                    # Generated plots
+  models_dir: "models/"                            # Base directory for saved models
+  surrogate_model_dir: "models/surrogates/"        # For saving trained ML models
+
+  # Optional advanced model directories
+  # hydrus_interface_dir: "simulations/hydrus/"      # If HYDRUS runs separately
+
+  # Templates directory
+  templates_dir: "templates/"
+
+# --- Climate Data Settings ---
+climate:
+  # Define which climate sources (defined in paths.climate_sources) to use in this run
+  active_sources: ["gcm_nex_cmip6"] # Example: Use only GCMs for this run
+  # Models (GCMs/RCMs) within active sources to process (use names matching directory structure)
+  models_to_run: ["ACCESS-ESM1-5", "CNRM-ESM2-1", "EC-Earth3-Veg-LR", "MIROC6"] # Subset of models available in active sources
+  # Scenarios (SSPs/RCPs) to process (use names matching directory structure under the model)
+  scenarios_to_run: ["ssp245", "ssp585"] # Ensure these exist for the selected models_to_run
+  # The pipeline will check compatibility (e.g., scenario exists for model/source path)
+
+  # Standard variable names expected after processing (CF conventions preferred)
+  variables: ["tasmax", "tasmin", "pr", "rsds", "sfcWind", "hurs"] # Adjust based on crop model needs & source data availability
+  calculate_extreme_indices: True # Flag to calculate heatwave, dry days etc. (in Step 1 or 5)
+
+  # Time periods
+  historical_period: ["1995-01-01", "2014-12-31"] # Baseline period for comparison
+  future_periods:
+    near_future: ["2024-01-01", "2050-12-31"]
+    mid_future: ["2051-01-01", "2075-12-31"]
+    far_future: ["2076-01-01", "2100-12-31"]
+
+  # Spatial domain for subsetting (Approx. Karnataka)
+  lat_range: [11.0, 19.0]
+  lon_range: [74.0, 79.0]
+
+  # Performance
+  use_dask: True # Set to True if climate datasets are large and Dask is installed
+
+# --- Crop Model Settings ---
+crop_models_to_run: ["DSSAT", "APSIM"] # List of models to include in ensemble for this run ["DSSAT", "APSIM", "STICS"]
+crop_model_configs:
+  # Settings specific to each model
+  DSSAT:
+    executable_path: "/path/to/your/dssat/dscsm048.exe" # ** EDIT THIS (Absolute or relative to base_dir) **
+    maize_module: "MZCER048" # DSSAT Maize module name (check your version)
+    cultivar_id: "LOCALNK_DSSAT" # Default cultivar ID for DSSAT (ensure this exists in DSSAT cultivar files)
+    outputs: # Files to parse by script 04
+      summary: "Summary.OUT"
+      plant_gro: "PlantGro.OUT" # Optional, if detailed growth needed
+      soil_ni: "SoilNi.OUT"     # Optional, if N balance needed
+      overview: "Overview.OUT" # Often useful for phenology dates (ADAT, MDAT)
+  APSIM:
+    # Specify path for Classic or Next Gen
+    executable_path: "/path/to/your/apsim_classic/Models.exe" # ** EDIT THIS (for Classic) **
+    # executable_path: "/path/to/your/apsim_nextgen/bin/ApsimNG.exe" # ** EDIT THIS (for NextGen) **
+    # APSIM NextGen requires a template file. Path relative to base_dir/templates_dir.
+    simulation_template: "apsim_maize_template.apsimx" # ** Relative path within templates_dir, EDIT THIS if using APSIM Next Gen **
+    cultivar_id: "LOCALNK_APSIM" # Default cultivar ID for APSIM (ensure defined in template or model)
+    outputs:
+      report_file: "MaizeReport.csv" # Name of the report file generated by APSIM (defined in template/simulation)
+  STICS:
+    executable_path: "/path/to/your/stics/stics_executable" # ** EDIT THIS **
+    cultivar_id: "LOCALNK_STICS" # Default cultivar ID for STICS (ensure defined in STICS plant files)
+    outputs:
+      mod_s: "mod_s.sti" # Main STICS simulation output file
+      # Add other STICS output files if needed for parsing
+
+# --- Simulation Settings ---
+simulation:
+  # locations_file is defined in paths section
+
+  # Sowing dates (MM-DD format) - used as baseline unless overridden by adaptation
+  sowing_dates: ["06-15", "06-30", "07-15"]
+
+  # Baseline management parameters (can be overridden by adaptation scenarios)
+  baseline_fertilizer_n: 120 # kg/ha total N applied (interfaces may need splitting logic)
+  baseline_irrigation_mode: "AUTO" # Model-specific: e.g., DSSAT 'AUTO', APSIM 'threshold', STICS 'auto'
+  baseline_irrigation_threshold_pct: 50 # % Available Soil Water depletion to trigger irrigation
+  baseline_irrigation_amount_mm: 25 # Amount per irrigation application (fixed amount example)
+
+  # --- Options for advanced simulation features ---
+  # Flags to enable/disable specific modules/integrations (Requires implementation in interfaces/scripts)
+  simulate_biotic_stress: False # Enable/disable biotic stress modifications
+  biotic_stress_parameters: # Parameters used if simulate_biotic_stress is True
+    module: "generic_stress_factor" # Identifier for the stress logic to apply (needs implementation)
+    target_variable: "Yield_kg_ha"  # Which *standardized* output variable the stress affects
+    stress_start_doy_offset: 60     # e.g., Stress starts 60 days after planting DOY
+    stress_duration_days: 30
+    stress_intensity_factor: 0.15   # e.g., 15% reduction potential applied by the module logic
+
+  simulate_soil_carbon: False # Enable/disable linking to a soil C model (e.g., Century/RothC)
+  soil_carbon_parameters: # Parameters if simulate_soil_carbon is True
+    model_name: "Placeholder_Century" # Identifier for the soil C model logic
+    initial_soc_ton_ha: 25
+    residue_incorporation_pct: 30 # Baseline residue management
+
+  integrate_hydrus: False # Enable/disable coupling with HYDRUS-1D for detailed water balance
+  hydrus_parameters: # Parameters if integrate_hydrus is True
+    hydrus_executable_path: "/path/to/your/hydrus/H1D_Calc.exe" # ** EDIT THIS **
+    profile_depth_cm: 150
+    time_variable_boundary: True # Use daily weather for top boundary
+
+# --- Adaptation Scenarios ---
+adaptations:
+  - name: "baseline"
+    description: "Current practices (uses settings from simulation section)"
+    settings: {} # Inherits baseline parameters
+  - name: "early_sowing_jun01"
+    description: "Shift sowing date to June 1st"
+    settings:
+      sowing_dates: ["06-01"] # Overrides the list in simulation section for this scenario
+  - name: "drip_irrigation_90eff"
+    description: "Conceptual high efficiency irrigation"
+    settings:
+      # Implementation depends on model capabilities. Conceptual example:
+      baseline_irrigation_threshold_pct: 70 # Trigger later (less stress allowed, mimics better timing?)
+      baseline_irrigation_amount_mm: 15 # Apply less water per event (mimics better placement?)
+      # Or if model supports it directly:
+      # irrigation_efficiency: 0.9
+  - name: "drought_tolerant_cultivar"
+    description: "Hypothetical drought tolerant cultivar"
+    settings:
+      # Override cultivar ID specifically for each model being run
+      DSSAT: { cultivar_id: "DROUGHTNK_DSSAT" } # Ensure this ID exists in DSSAT
+      APSIM: { cultivar_id: "DROUGHTNK_APSIM" } # Ensure this ID exists in APSIM
+      STICS: { cultivar_id: "DROUGHTNK_STICS" } # Ensure this ID exists in STICS
+      # ** Requires corresponding calibrated cultivar files/parameters for each model! **
+  - name: "residue_retention_50pct"
+    description: "Retain 50% crop residues (if soil C module enabled)"
+    settings:
+      # Parameters relevant if simulate_soil_carbon is True
+      soil_carbon_parameters: { residue_incorporation_pct: 50 }
+
+# --- Analysis Settings ---
+analysis:
+  baseline_period_name: "historical" # Must match the key for the historical period dates
+  reference_period_for_change: ["1995-01-01", "2014-12-31"] # Dates used for calculating baseline averages
+
+  # Standardized output variable names (used in analysis scripts 05, 06, 07)
+  output_variables:
+    - "Yield_kg_ha"       # Final grain yield
+    - "ETc_mm"            # Cumulative Crop Evapotranspiration
+    - "Irrigation_mm"     # Cumulative Irrigation applied
+    - "Anthesis_DOY"      # Day of Year of Anthesis/Flowering
+    - "Maturity_DOY"      # Day of Year of Physiological Maturity
+    - "Biomass_kg_ha"     # Maximum Aboveground Biomass
+    - "SoilEvap_mm"       # Cumulative Soil Evaporation
+    - "NUptake_kg_ha"     # Cumulative Nitrogen uptake by crop
+    # Add other desired standard outputs:
+    # - "WaterStressIndex" # Example calculated stress index
+    # - "NStressIndex"     # Example calculated stress index
+    # - "MaxLAI"           # Maximum Leaf Area Index
+    # - "WaterProductivity_yield_etc" # Yield / ETc
+
+  # Mapping from model-specific output names to STANDARD names (defined above)
+  # Structure: StandardName: ModelSpecificNameFromOutput
+  # ** CRITICAL: Ensure ModelSpecificNameFromOutput exactly matches the name in the model's parsed output **
+  variable_mapping:
+    DSSAT:
+      Yield_kg_ha: "GWAD" # Grain weight at maturity
+      ETc_mm: "ETCP"      # Cumulative Crop Transpiration (Might need EPCM added manually if ETc = ET + ES)
+      Irrigation_mm: "IRCM" # Cumulative Irrigation
+      Anthesis_DOY: "ADAP" # Day of year of anthesis (from Overview.OUT usually more reliable: ADAT)
+      Maturity_DOY: "MDAP" # Day of year of maturity (from Overview.OUT usually more reliable: MDAT)
+      Biomass_kg_ha: "HWAM" # Harvest weight at maturity (above ground)
+      SoilEvap_mm: "EPCM"   # Cumulative Soil Evaporation
+      NUptake_kg_ha: "NICM" # Cumulative N uptake
+      # MaxLAI: "LAIX" # Example if needed
+    APSIM:
+      Yield_kg_ha: "Yield"  # Check specific report file header for exact name
+      ETc_mm: "Maize.Evapotranspiration" # Check specific report header (might be Evaporation + Transpiration)
+      Irrigation_mm: "Maize.Irrigation" # Check specific report header
+      Anthesis_DOY: "Maize.Phenology.AnthesisDay" # Check specific report header (Day number from start?)
+      Maturity_DOY: "Maize.Phenology.MaturityDay" # Check specific report header (Day number from start?)
+      Biomass_kg_ha: "Maize.AboveGround.Wt" # Check specific report header
+      SoilEvap_mm: "Maize.SoilEvap" # Check specific report header
+      NUptake_kg_ha: "Maize.NUptake" # Check specific report header (might need total N uptake)
+    STICS:
+      Yield_kg_ha: "masec(n)" # Grain yield (dry) at harvest day n
+      ETc_mm: "cumulbetr" # Cumulative crop transpiration? Check STICS variable list. ETP often potential. Needs care.
+      Irrigation_mm: "cumulirrig"
+      Anthesis_DOY: "istagefloraison" # Day number of flowering stage
+      Maturity_DOY: "istagematurite" # Day number of maturity stage
+      Biomass_kg_ha: "maerienne(n)" # Max aerial biomass? Check variable list.
+      SoilEvap_mm: "cumulesol" # Cumulative soil evaporation
+      NUptake_kg_ha: "QNplanteabsorb" # Total absorbed N by plant
+
+  # Output format for combined results parquet file
+  output_compression: "gzip" # Options: 'gzip', 'snappy', 'brotli', None
+
+# --- Machine Learning Surrogate Settings ---
+surrogate_model:
+  enabled: False # Master switch to enable/disable ML surrogate steps (08, 09)
+  model_type: "RandomForest" # Algorithm: "RandomForest", "XGBoost", "MLP" (requires implementation)
+  # Features to use for training (must be available in combined results or calculated during feature engineering)
+  features:
+    # Location features
+    - "lat"
+    - "lon"
+    # Management features
+    - "sowing_doy" # Day of year of sowing
+    - "baseline_fertilizer_n" # From config/adaptation
+    - "baseline_irrigation_threshold_pct" # From config/adaptation
+    # Climate summary features (Need to be calculated and joined)
+    - "AvgTmax_C" # Growing season average Tmax
+    - "AvgTmin_C" # Growing season average Tmin
+    - "TotalPrecip_mm" # Growing season total precipitation
+    # Scenario features (Need encoding)
+    - "climate_source" # e.g., 'gcm_nex_cmip6'
+    - "gcm" # Climate model name (e.g., 'ACCESS-ESM1-5')
+    - "scenario" # e.g., 'ssp245', 'historical'
+    - "period" # e.g., 'near_future'
+    # Soil features (Need encoding if categorical)
+    - "soil_id" # Soil profile identifier
+    # Adaptation features (Need encoding)
+    - "adaptation" # Adaptation name
+
+  # Target variables the surrogate will predict (must be standard names from analysis.output_variables)
+  targets: ["Yield_kg_ha", "Irrigation_mm"]
+
+  # Hyperparameters for the chosen model_type
+  hyperparameters:
+    # Example for RandomForestRegressor from scikit-learn
+    n_estimators: 150       # Number of trees
+    max_depth: 25           # Max depth of trees (None for unlimited)
+    min_samples_split: 5    # Min samples required to split a node
+    min_samples_leaf: 3     # Min samples required at a leaf node
+    max_features: 0.7       # Fraction of features considered for best split
+
+  # Train/Test split ratio for evaluation during training
+  test_size: 0.2

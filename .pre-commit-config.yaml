@@ -1,0 +1,121 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.4.0
+    hooks:
+    -   id: trailing-whitespace
+    -   id: end-of-file-fixer
+    -   id: check-yaml
+    -   id: check-toml
+    -   id: check-added-large-files
+        args: ['--maxkb=1000']
+    -   id: mixed-line-ending
+        args: ['--fix=lf']
+    -   id: check-merge-conflict
+    -   id: check-case-conflict
+    -   id: detect-private-key
+    -   id: debug-statements
+
+-   repo: https://github.com/psf/black
+    rev: 23.3.0
+    hooks:
+    -   id: black
+        language_version: python3
+        types: [python]
+        exclude: ^(docs/|notebooks/)
+
+-   repo: https://github.com/pycqa/isort
+    rev: 5.12.0
+    hooks:
+    -   id: isort
+        args: ["--profile", "black"]
+        types: [python]
+        exclude: ^(docs/|notebooks/)
+
+-   repo: https://github.com/pycqa/flake8
+    rev: 6.0.0
+    hooks:
+    -   id: flake8
+        additional_dependencies:
+          - flake8-bugbear
+          - flake8-docstrings
+          - flake8-typing-imports
+        types: [python]
+        exclude: ^(docs/|notebooks/)
+
+-   repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.2.0
+    hooks:
+    -   id: mypy
+        additional_dependencies:
+          - types-all
+          - numpy
+          - pandas-stubs
+        types: [python]
+        exclude: ^(docs/|notebooks/)
+
+-   repo: https://github.com/asottile/pyupgrade
+    rev: v3.3.1
+    hooks:
+    -   id: pyupgrade
+        args: [--py38-plus]
+        types: [python]
+        exclude: ^(docs/|notebooks/)
+
+-   repo: https://github.com/kynan/nbstripout
+    rev: 0.6.1
+    hooks:
+    -   id: nbstripout
+        files: ".ipynb"
+
+-   repo: local
+    hooks:
+    -   id: pytest
+        name: Run tests
+        entry: pytest
+        language: system
+        pass_filenames: false
+        always_run: true
+        types: [python]
+        stages: [push]
+
+    -   id: check-manifest
+        name: Check MANIFEST.in
+        entry: check-manifest
+        language: system
+        pass_filenames: false
+        always_run: true
+        types: [python]
+        stages: [push]
+
+    -   id: pip-audit
+        name: Check dependencies
+        entry: pip-audit
+        language: system
+        pass_filenames: false
+        always_run: true
+        types: [python]
+        stages: [push]
+
+# Custom hooks for project-specific checks
+-   repo: local
+    hooks:
+    -   id: check-config-template
+        name: Check config template is up to date
+        entry: python scripts/check_config_template.py
+        language: system
+        files: ^config/config_template\.yaml$
+        pass_filenames: false
+
+    -   id: validate-model-templates
+        name: Validate model templates
+        entry: python scripts/validate_model_templates.py
+        language: system
+        files: ^data/templates/.*\.(mzx|apsimx|tec)$
+        pass_filenames: false
+
+ci:
+    autofix_commit_msg: 'style: auto fixes from pre-commit.com hooks'
+    autoupdate_commit_msg: 'chore: pre-commit autoupdate'
+    autoupdate_schedule: monthly

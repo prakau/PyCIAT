@@ -1,0 +1,218 @@
+/* Custom CSS for documentation */
+
+/* Main layout */
+.wy-nav-content {
+    max-width: 1000px;  /* Wider content area */
+}
+
+/* Typography */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    margin-top: 2em;
+    margin-bottom: 0.5em;
+}
+
+/* Code blocks */
+.highlight {
+    background: #f8f8f8;
+    border-radius: 4px;
+    margin: 1em 0;
+}
+
+.highlight pre {
+    padding: 1em;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* Inline code */
+code.literal {
+    background: #f0f0f0;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-size: 90%;
+    color: #e74c3c;
+}
+
+/* API documentation */
+dl.class, dl.function, dl.method {
+    padding: 1em;
+    margin: 1em 0;
+    border-left: 4px solid #2980b9;
+    background: #f8f9fa;
+}
+
+dl.class dt, dl.function dt, dl.method dt {
+    font-weight: bold;
+    margin-bottom: 0.5em;
+}
+
+/* Parameter lists */
+dl.field-list {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 1em;
+    margin: 1em 0;
+}
+
+dl.field-list dt {
+    font-weight: bold;
+    color: #444;
+}
+
+/* Notes and warnings */
+.admonition {
+    padding: 1em;
+    margin: 1em 0;
+    border-radius: 4px;
+}
+
+.admonition.note {
+    background-color: #e8f4f8;
+    border-left: 4px solid #2980b9;
+}
+
+.admonition.warning {
+    background-color: #fff3e0;
+    border-left: 4px solid #f39c12;
+}
+
+.admonition.error {
+    background-color: #fde8e8;
+    border-left: 4px solid #c0392b;
+}
+
+/* Navigation */
+.wy-menu-vertical {
+    background-color: #2c3e50;
+}
+
+.wy-menu-vertical a {
+    color: #fff;
+}
+
+.wy-menu-vertical li.current {
+    background-color: #34495e;
+}
+
+/* Search box */
+.wy-side-nav-search {
+    background-color: #2980b9;
+}
+
+.wy-side-nav-search input[type="text"] {
+    border-radius: 4px;
+    padding: 8px 12px;
+}
+
+/* Tables */
+table.docutils {
+    border-collapse: collapse;
+    margin: 1em 0;
+    width: 100%;
+}
+
+table.docutils th {
+    background-color: #f4f4f4;
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+table.docutils td {
+    padding: 8px;
+    border: 1px solid #ddd;
+}
+
+/* Links */
+a {
+    color: #2980b9;
+    text-decoration: none;
+}
+
+a:hover {
+    color: #3498db;
+    text-decoration: underline;
+}
+
+/* Figures and images */
+img {
+    max-width: 100%;
+    height: auto;
+    margin: 1em 0;
+}
+
+.figure {
+    margin: 1.5em 0;
+    text-align: center;
+}
+
+.figure img {
+    display: block;
+    margin: 0 auto;
+}
+
+.figure .caption {
+    margin-top: 0.5em;
+    font-style: italic;
+    color: #666;
+}
+
+/* API method signatures */
+.sig {
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+    padding: 4px 8px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.sig-name {
+    color: #2980b9;
+}
+
+.sig-param {
+    color: #444;
+}
+
+/* Version selector */
+.version-selector {
+    margin-bottom: 1em;
+    padding: 0.5em;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+/* Mobile responsiveness */
+@media screen and (max-width: 768px) {
+    .wy-nav-content-wrap {
+        margin-left: 0;
+    }
+    
+    .wy-nav-side {
+        left: -300px;
+    }
+    
+    .wy-nav-content {
+        padding: 1em;
+    }
+}
+
+/* Print styles */
+@media print {
+    .wy-nav-side {
+        display: none;
+    }
+    
+    .wy-nav-content-wrap {
+        margin-left: 0;
+    }
+    
+    .rst-content {
+        max-width: 100%;
+    }
+}

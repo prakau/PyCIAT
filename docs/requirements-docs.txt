@@ -1,0 +1,66 @@
+# Documentation building requirements
+
+# Base Sphinx setup
+sphinx>=4.5.0
+sphinx-rtd-theme>=1.0.0
+sphinx-autodoc-typehints>=1.12.0
+sphinx-copybutton>=0.4.0
+sphinx-design>=0.1.0
+sphinxcontrib-napoleon>=0.7
+sphinxcontrib-applehelp>=1.0.2
+sphinxcontrib-devhelp>=1.0.2
+sphinxcontrib-htmlhelp>=2.0.0
+sphinxcontrib-jsmath>=1.0.1
+sphinxcontrib-qthelp>=1.0.3
+sphinxcontrib-serializinghtml>=1.1.5
+
+# Additional extensions
+sphinx-gallery>=0.10.1
+nbsphinx>=0.8.8
+pandoc>=2.0.0
+sphinx-automodapi>=0.14.1
+sphinx-togglebutton>=0.3.2
+sphinx-prompt>=1.5.0
+sphinx-book-theme>=0.3.3
+sphinx-hoverxref>=1.0.1
+sphinx-notfound-page>=0.8
+sphinx-panels>=0.6.0
+
+# Theme and styling
+furo>=2022.4.7
+pydata-sphinx-theme>=0.8.1
+sphinx-material>=0.0.35
+
+# Code documentation
+numpydoc>=1.2.1
+myst-parser>=0.18.0
+myst-nb>=0.13.2
+
+# Quality checks
+doc8>=0.11.1
+rstcheck>=3.3.1
+sphinx-lint>=0.6.3
+sphinxcontrib-spelling>=7.3.2
+
+# Release tools
+sphinx-multiversion>=0.2.4
+sphinx-sitemap>=2.2.0
+
+# Additional tools
+sphinxcontrib-plantuml>=0.24
+sphinxcontrib-mermaid>=0.7.1
+graphviz>=0.17
+imagesize>=1.3.0
+
+# PDF generation
+rst2pdf>=0.99
+sphinx-rtd-pdf>=0.3.1
+
+# Version specific dependencies
+jinja2>=3.0.0
+docutils>=0.17.1
+pygments>=2.10.0
+packaging>=21.3
+
+# Project dependencies (for API docs)
+-r ../requirements.txt
