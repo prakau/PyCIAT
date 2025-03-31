@@ -133,8 +133,6 @@ pyciat/
 ## Setup
 
 1.  **Clone the Repository:**
-    ```bash
-    # Replace with your actual repository URL
     git clone https://github.com/username/pyciat.git
     cd pyciat
     ```
