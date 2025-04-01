@@ -18,10 +18,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Multiple model interfaces
 
 ### Changed
-- None
+- Standardized script naming:
+  - Scripts now follow numbered sequence (00-09)
+  - Renamed adaptations script to use consistent terminology (analyze vs evaluate)
+  - Renamed visualizations script to match implementation
+- Improved HPC documentation and added SLURM template
 
 ### Deprecated
-- None
+- Deprecated standalone train_surrogate.py in favor of 08_train_surrogate.py
+- Deprecated standalone predict_surrogate.py in favor of 09_predict_surrogate.py
 
 ### Removed
 - None

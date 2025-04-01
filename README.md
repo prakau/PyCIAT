@@ -2,10 +2,9 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python Versions](https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blue)](https://www.python.org)
-<!-- Add badges for CI status, coverage, docs etc. once set up -->
-<!-- [![CI Status](https://github.com/username/pyciat/actions/workflows/ci.yml/badge.svg)](https://github.com/username/pyciat/actions/workflows/ci.yml) -->
-<!-- [![Coverage Status](https://codecov.io/gh/username/pyciat/branch/main/graph/badge.svg)](https://codecov.io/gh/username/pyciat) -->
-<!-- [![Documentation Status](https://readthedocs.org/projects/pyciat/badge/?version=latest)](https://pyciat.readthedocs.io/en/latest/?badge=latest) -->
+[![CI Status](https://github.com/username/pyciat/actions/workflows/ci.yml/badge.svg)](https://github.com/username/pyciat/actions/workflows/ci.yml)
+[![Coverage Status](https://codecov.io/gh/username/pyciat/branch/main/graph/badge.svg)](https://codecov.io/gh/username/pyciat)
+[![Documentation Status](https://readthedocs.org/projects/pyciat/badge/?version=latest)](https://pyciat.readthedocs.io/en/latest/?badge=latest)
 
 ## Overview
 
@@ -66,7 +65,7 @@ pyciat/
 │   ├── requirements-docs.txt
 │   └── ...
 │
-├── examples/                   # NEW: Example configurations and use cases
+├── examples/                   # Example configurations and use cases
 │   ├── single_site/
 │   ├── regional_assessment/
 │   └── adaptation_study/
@@ -74,7 +73,7 @@ pyciat/
 ├── logs/                       # (Not in Git) Runtime log files
 │
 ├── models/                     # (Not in Git) Trained model artifacts / Model executables
-│   └── surrogates/             # Saved ML surrogate models
+│   └── surrogates/            # Saved ML surrogate models
 │
 ├── notebooks/                  # Jupyter notebooks for exploration, tutorials
 │   ├── README.md
@@ -87,13 +86,13 @@ pyciat/
 │   ├── 03_run_simulations_parallel.py # Execute crop models (local/HPC)
 │   ├── 04_process_outputs.py     # Parse outputs, standardize variables
 │   ├── 05_analyze_impacts.py     # Calculate impacts vs baseline
-│   ├── 06_analyze_adaptations.py # Analyze adaptation effectiveness (Renamed from evaluate)
-│   ├── 07_generate_visualizations.py # Create plots/maps (Renamed from figures)
+│   ├── 06_analyze_adaptations.py # Analyze adaptation effectiveness
+│   ├── 07_generate_visualizations.py # Create plots/maps
 │   ├── 08_train_surrogate.py     # Optional: Train ML model
 │   ├── 09_predict_surrogate.py   # Optional: Predict with ML model
-│   ├── run_all.py                # Example script to run all steps
-│   ├── setup_directories.py      # Utility to create needed dirs
-│   └── ...                       # Other utility scripts (e.g., template validation)
+│   ├── run_all.py                # Script to run all steps
+│   ├── run_hpc.sh               # HPC job submission template
+│   └── setup_directories.py      # Utility to create needed dirs
 │
 ├── simulations/                # (Not in Git) Generated simulation files
 │   ├── setup/                  # Organized inputs per run
@@ -101,22 +100,22 @@ pyciat/
 │   └── simulation_status.csv   # Tracking file for all runs (or .db)
 │
 ├── src/                        # Source code library
-│   ├── advanced_modules/       # *** NEW: Advanced integrations (IMPLEMENT PLACEHOLDERS) ***
+│   ├── advanced_modules/       # Advanced integrations (placeholders)
 │   │   ├── __init__.py
 │   │   ├── biotic_stress/
 │   │   └── hydrus/
 │   ├── analysis.py             # Impact and adaptation analysis functions
 │   ├── climate_processing.py   # Climate data loading and processing
 │   ├── config_loader.py        # YAML configuration loading and validation
-│   ├── crop_model_interface/   # *** Model interfaces (IMPLEMENT PLACEHOLDERS) ***
+│   ├── crop_model_interface/   # Model interfaces (placeholders)
 │   │   ├── __init__.py
 │   │   ├── apsim_interface.py
 │   │   ├── base_interface.py
 │   │   ├── dssat_interface.py
 │   │   ├── status_codes.py     # Simulation status definitions
 │   │   └── stics_interface.py
-│   ├── soil_processing.py      # *** NEW: Soil data handling (IMPLEMENT PLACEHOLDERS) ***
-│   ├── surrogate_model/        # *** NEW: ML logic (IMPLEMENT PLACEHOLDERS) ***
+│   ├── soil_processing.py      # Soil data handling (placeholder)
+│   ├── surrogate_model/        # ML logic (placeholders)
 │   │   ├── __init__.py
 │   │   ├── evaluation.py
 │   │   ├── feature_engineering.py
@@ -196,19 +195,19 @@ make process-outputs
 make analyze-impacts
 
 # Analyze adaptation effectiveness
-make analyze-adaptations # Note: Target name updated
+make analyze-adaptations
 
-# Generate figures and maps
-make generate-figures # Note: Target name updated
+# Generate visualizations
+make generate-visualizations
 
-# Run the entire pipeline (example, may need customization)
-# make run-pipeline # Requires scripts/run_all.py to be configured
+# Run the entire pipeline
+make run-all # Executes scripts/run_all.py
 
 # Optional: Train surrogate model
 make train-surrogate
 
 # Optional: Predict with surrogate model (requires input feature file)
-# make predict-surrogate # Requires setting file paths
+make predict-surrogate
 ```
 
 **Running Scripts Directly:**
@@ -283,7 +282,7 @@ make train-surrogate
 
 *   Set `parallel: use_hpc_env_vars: true` in `config.yaml`.
 *   Configure `hpc_task_id_var` and `hpc_num_tasks_var` to match your scheduler (e.g., `SLURM_ARRAY_TASK_ID`, `SLURM_ARRAY_TASK_COUNT`).
-*   Create a job submission script (like the placeholder `scripts/run_hpc.sh` - **needs creation/adaptation**) for your scheduler (e.g., SLURM). This script should activate the environment and execute `python scripts/03_run_simulations_parallel.py --config path/to/config.yaml`.
+*   A SLURM job submission script template is provided at `scripts/run_hpc.sh`. Modify this script to match your HPC environment configuration (modules, paths, resource requirements).
 *   Submit the job script as an array job (e.g., `sbatch --array=1-N jobscript.sh`, where N is the desired number of parallel tasks).
 *   The Python script `03_run_simulations_parallel.py` will automatically detect the environment variables and divide the simulations marked `READY_TO_RUN` among the job tasks based on the task ID.
 *   Ensure the project directory (especially `simulations/simulation_status.csv` and the `simulations/setup/` directories) is on a shared filesystem accessible by all cluster nodes/jobs.
